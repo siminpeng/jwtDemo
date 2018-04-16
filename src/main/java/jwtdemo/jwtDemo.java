@@ -23,36 +23,33 @@ import java.util.Map;
  */
 public class jwtDemo
 {
-  private final String CLEENT_ID = "12345678";//应用id
-  private final String CLEENT_SECRET = "clientSecret12345678";
-  
   /**
    * 生成token
    * @param outerUserID 系统管理员id
    * @param account 系统管理员账号
+   * @param clientId
+   * @param clientSecret
    * @return token
    */
-  public String getToken ( Long outerUserID, String account )
+  public String getToken ( Long outerUserID, String account, String clientId, String clientSecret )
   {
     String token = null;
     try
     {
       //生成token
-      Algorithm algorithm = Algorithm.HMAC256( CLEENT_SECRET );
+      Algorithm algorithm = Algorithm.HMAC256( clientSecret );
 
       Calendar calendar = Calendar.getInstance();
-      calendar.add( Calendar.MINUTE, 30 ); //过期时间30分钟
+      calendar.add( Calendar.DATE, 3 ); //过期时间30分钟
       Date date = calendar.getTime();
 
       token = JWT.create()
-          .withIssuer( CLEENT_ID )//请求方
+          .withIssuer( clientId )//请求方
           .withExpiresAt( date )//过期时间
           .withClaim("out_user_id", outerUserID )//系统管理员id
           .withClaim("account", account )
           .sign( algorithm );
-      
     } 
-    
     catch ( UnsupportedEncodingException | JWTCreationException exception ){
         //UTF-8 encoding not supported/Invalid Signing configuration / Couldn't convert Claims.
     }
@@ -62,15 +59,16 @@ public class jwtDemo
   /**
    * 检查token是否可用
    * @param token 
+   * @param clientSecret 
    * @return  是否可用
    */
-  public boolean validate ( String token )
+  public boolean validate ( String token, String clientSecret )
   {
     boolean flag = false;
     try
     {
       //检查token
-      Algorithm algorithm = Algorithm.HMAC256( String.valueOf( CLEENT_SECRET ) );
+      Algorithm algorithm = Algorithm.HMAC256( String.valueOf( clientSecret ) );
       JWTVerifier verifier = JWT.require( algorithm )
         .build(); 
       DecodedJWT jwt = verifier.verify( token );
@@ -119,13 +117,15 @@ public class jwtDemo
   
   public static void main( String[] args )
   {
+    String clientID = "12345678";//应用id
+    String clientSecret = "clientSecret12345678";
     //创建token
     Long outerUserId = 123456789L;
     String account = "gsj";
     jwtDemo jetTest = new jwtDemo();
-    String token = jetTest.getToken( outerUserId, account );
+    String token = jetTest.getToken( outerUserId, account, clientID, clientSecret );
     //输出token的信息
-    if( jetTest.validate( token ) )
+    if( jetTest.validate( token, clientSecret ) )
     {
       Map<String, Object> tokenMap = jetTest.getTokenInfo( token );
       tokenMap.entrySet().forEach((Map.Entry<String, Object> entry) ->
