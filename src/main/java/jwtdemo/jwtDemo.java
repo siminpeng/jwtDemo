@@ -27,11 +27,11 @@ public class jwtDemo
    * 生成token
    * @param outerUserID 系统管理员id
    * @param account 系统管理员账号
-   * @param clientId
+   * @param clientId 
    * @param clientSecret
    * @return token
    */
-  public String getToken ( Long outerUserID, String account, String clientId, String clientSecret )
+  public String getToken ( String outerUserID, String account, String clientId, String clientSecret )
   {
     String token = null;
     try
@@ -40,14 +40,14 @@ public class jwtDemo
       Algorithm algorithm = Algorithm.HMAC256( clientSecret );
 
       Calendar calendar = Calendar.getInstance();
-      calendar.add( Calendar.DATE, 3 ); //过期时间30分钟
+      calendar.add( Calendar.DATE, 3 ); //过期时间3天
       Date date = calendar.getTime();
 
       token = JWT.create()
           .withIssuer( clientId )//请求方
           .withExpiresAt( date )//过期时间
-          .withClaim("out_user_id", outerUserID )//系统管理员id
-          .withClaim("account", account )
+          .withClaim( "out_user_id", outerUserID )//系统管理员id
+          .withClaim( "account", account )
           .sign( algorithm );
     } 
     catch ( UnsupportedEncodingException | JWTCreationException exception ){
@@ -97,7 +97,7 @@ public class jwtDemo
       String type = jwt.getType();
       Long clientId = Long.valueOf( jwt.getIssuer() ); //请求方
       Date expiresAt = jwt.getExpiresAt(); //过期时间
-      Long outerUserID = jwt.getClaim( "out_user_id" ).asLong();//系统管理员id
+      String outerUserID = jwt.getClaim( "out_user_id" ).asString();//系统管理员id
       String account = jwt.getClaim( "account" ).asString();//管理员账号
       
       tokenMap.put( "algorithm", algorithm );
@@ -120,7 +120,7 @@ public class jwtDemo
     String clientID = "12345678";//应用id
     String clientSecret = "clientSecret12345678";
     //创建token
-    Long outerUserId = 123456789L;
+    String outerUserId = "123456789";
     String account = "gsj";
     jwtDemo jetTest = new jwtDemo();
     String token = jetTest.getToken( outerUserId, account, clientID, clientSecret );
